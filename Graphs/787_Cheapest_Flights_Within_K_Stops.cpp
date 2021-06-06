@@ -1,38 +1,29 @@
 //787. Cheapest Flights Within K Stops
 //https://leetcode.com/problems/cheapest-flights-within-k-stops/
 
-class Solution {
-    void solve(vector<vector<int>>& adj,vector<vector<int>>& cost,int src, int dst, int k,int &fare,int totCost,vector<bool>&visited){
-       
-    if(k<-1)
-    return;
-    if(src==dst){
-        fare=min(fare,totCost);
-        return;
-    }
-    visited[src]=true;
-           for(int i=0;i<adj[src].size();i++){
-               
-         if(!visited[adj[src][i]]&& (totCost+cost[src][adj[src][i]]<=fare))
-    solve(adj,cost,adj[src][i],dst,k-1,fare,totCost+cost[src][adj[src][i]],visited);
-    }
-    visited[src]=false;
-}
+class Solution{
 public:
-    int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int K) {
-         vector<vector<int>>adj(n);
-        vector<vector<int>>cost(n+1,vector<int>(n+1));
+    
+    int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int K){        
+        vector<vector<int>> dp(K+2, vector<int>(n, INT_MAX));
         
-        for(int i=0;i<flights.size();i++){            
-            adj[flights[i][0]].push_back(flights[i][1]);
-            cost[flights[i][0]][flights[i][1]]=flights[i][2];
+        //dp[i][j] = Dist to reach j using atmost i edges from src
+        
+        for(int i = 0; i <= K+1; i++){
+            dp[i][src] = 0; // Dist to reach src always zero
         }
         
-        vector<bool>visited(n+1,false);
-        int fare=INT_MAX;
-        solve(adj,cost,src,dst,K,fare,0,visited);
-        
-        if(fare==INT_MAX) return -1;
-        return fare;
+        for(int i = 1; i <= K+1; i++){
+            for(auto &f: flights){
+                //Using indegree
+                int u = f[0];
+                int v = f[1];
+                int w = f[2];
+                
+                if(dp[i-1][u] != INT_MAX)
+                    dp[i][v] = min(dp[i][v], dp[i-1][u] + w);
+            }
+        }
+        return (dp[K+1][dst] == INT_MAX)? -1: dp[K+1][dst];
     }
 };
